@@ -1802,8 +1802,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Add from catalog
-  $('[data-action="add-from-catalog"]').addEventListener('click', () => {
+  $('[data-action="add-from-catalog"]')?.addEventListener('click', () => {
     const sel = $('#kit-catalog-pick');
+    if (!sel) return;
     const idx = sel.value;
     if (idx === '') return;
     const k = getKit()[idx];
@@ -1813,10 +1814,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Add from labor picker
-  $('[data-action="add-from-labor"]').addEventListener('click', () => {
+  $('[data-action="add-from-labor"]')?.addEventListener('click', () => {
     const deptSel = $('#labor-dept-pick');
     const roleSel = $('#labor-role-pick');
-    const roleName = roleSel && roleSel.value;
+    if (!deptSel || !roleSel) return;
+    const roleName = roleSel.value;
     if (!roleName) return;
     const allRoles = (RATE_CARD.departments || []).flatMap(d => d.roles);
     const r = allRoles.find(x => x.name === roleName);
