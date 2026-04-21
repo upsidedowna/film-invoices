@@ -2,9 +2,9 @@ name: Rate Card Update
 
 on:
   schedule:
-    # Runs April 21 and October 21 at 9:17am UTC each year
-    - cron: '17 9 21 4 *'
-    - cron: '17 9 21 10 *'
+    # Runs February 1 and August 1 at 9:17am UTC each year
+    - cron: '17 9 1 2 *'
+    - cron: '17 9 1 8 *'
   workflow_dispatch:
     inputs:
       dry_run:
