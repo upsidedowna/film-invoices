@@ -1138,19 +1138,10 @@ function renderCoverage() {
     }
     anyRows = true;
     sectionCount++;
-    const headRow = el('tr', { class: 'cv-section-row' });
-    headRow.appendChild(el('td', { colspan: '3' }, sectionLabels[section] || section.toUpperCase()));
-    tbody.appendChild(headRow);
     if (section === 'kit') {
-      let lastCat = null;
       for (const r of rows) {
         const cat = r.category || '';
-        if (cat && cat !== lastCat) {
-          lastCat = cat;
-          const subRow = el('tr', { class: 'cv-kit-subcat-row' });
-          subRow.appendChild(el('td', { colspan: '3' }, cat.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())));
-          tbody.appendChild(subRow);
-        }
+        if (cat) { void cat; } // category preserved in data, not shown as label
         const tr = el('tr');
         const qty = parseFloat(r.qty) || 1;
         const detailLabel = (r.details || '') + (qty > 1 ? ` ×${qty}` : '');
@@ -1353,9 +1344,6 @@ function renderQuote() {
     const rows = inv.sections[section] || [];
     if (rows.length === 0) continue;
     qAnyRows = true;
-    const headRow = el('tr', { class: 'q-section' });
-    headRow.appendChild(el('td', { colspan: '3' }, quoteSections[section] || section.toUpperCase()));
-    tbody.appendChild(headRow);
     for (const r of rows) {
       const tr = el('tr', { class: 'q-item' });
       const qty = parseFloat(r.qty) || 1;
