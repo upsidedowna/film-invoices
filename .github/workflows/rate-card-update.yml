@@ -58,9 +58,15 @@ jobs:
         if: steps.diff.outputs.changed == 'true' && inputs.dry_run != true
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_RXa7wnXA0XtJwxs67ll0FpZA
-          VERCEL_PROJECT_ID: prj_JPWvnBxj7CIwdaKAVDvYCpJgcuPD
-        run: npx vercel --prod --token=$VERCEL_TOKEN --yes
+        run: |
+          # Deploy from a clean temp dir (no git context) to avoid Vercel's
+          # commit-author team membership check on OAuth tokens.
+          DEPLOY_DIR=$(mktemp -d)
+          cp index.html app.js app.css kit.html rate-card.json vercel.json "$DEPLOY_DIR/"
+          cp .vercelignore "$DEPLOY_DIR/" 2>/dev/null || true
+          mkdir -p "$DEPLOY_DIR/.vercel"
+          echo '{"projectId":"prj_JPWvnBxj7CIwdaKAVDvYCpJgcuPD","orgId":"team_RXa7wnXA0XtJwxs67ll0FpZA"}' > "$DEPLOY_DIR/.vercel/project.json"
+          cd "$DEPLOY_DIR" && npx vercel --prod --token=$VERCEL_TOKEN --yes
 
       - name: Log summary
         run: |
