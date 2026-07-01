@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kit Builder — Invoice Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F5F0;
+      --surface: #FFFFFF;
+      --ink: #0A0E1A;
+      --ink-muted: #4A5568;
+      --accent: #1E3A5F;
+      --accent-soft: #3A5A85;
+      --highlight-soft: rgba(212, 184, 150, 0.35);
+      --border: #D8D4CA;
+      --bg-soft: #EDEAE3;
+      --danger: #8B1E1E;
+      --font-body: 'Inter', -apple-system, system-ui, sans-serif;
+      --font-display: 'DM Serif Display', Georgia, serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .kb-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .kb-header-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      margin: 0;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      flex: 1;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--ink-muted);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    .btn {
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--bg-soft); }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent-soft); }
+    .btn-sm { padding: 5px 11px; font-size: 12px; }
+
+    .kb-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 200px 1fr 320px;
+      gap: 24px;
+      min-height: calc(100vh - 100px);
+    }
+
+    .kb-dept-panel {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+    }
+
+    .kb-dept-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: var(--ink-muted);
+      margin: 0 0 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 11px;
+    }
+
+    .kb-dept-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .kb-dept-btn {
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+      color: var(--ink);
+    }
+
+    .kb-dept-btn:hover {
+      border-color: var(--accent-soft);
+      background: var(--bg-soft);
+      color: var(--accent);
+    }
+
+    .kb-dept-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .kb-equipment-panel {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .kb-tier-toggle {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .kb-tier-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kb-tier-btn:hover {
+      border-color: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .kb-tier-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .kb-equipment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .kb-parent-item {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .kb-parent-header {
+      padding: 12px 14px;
+      background: var(--bg-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .kb-parent-header:hover {
+      background: #e8e5dd;
+    }
+
+    .kb-parent-header.expanded {
+      background: var(--highlight-soft);
+    }
+
+    .kb-parent-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .kb-expand-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .kb-parent-header.expanded .kb-expand-icon {
+      transform: rotate(180deg);
+    }
+
+    .kb-variants {
+      display: none;
+      padding: 12px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .kb-variants.show {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .kb-variant {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .kb-variant:hover {
+      border-color: var(--accent);
+      background: var(--highlight-soft);
+    }
+
+    .kb-variant-name {
+      flex: 1;
+    }
+
+    .kb-variant-price {
+      color: var(--accent);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kb-summary-panel {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+    }
+
+    .kb-summary-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin: 0 0 16px;
+      color: var(--ink);
+    }
+
+    .kb-selected-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 12px;
+      background: var(--bg-soft);
+      border-radius: 6px;
+    }
+
+    .kb-selected-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .kb-selected-remove {
+      background: rgba(139, 30, 30, 0.06);
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      transition: background 0.15s;
+    }
+
+    .kb-selected-remove:hover {
+      background: rgba(139, 30, 30, 0.15);
+    }
+
+    .kb-cost-section {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      margin-bottom: 16px;
+    }
+
+    .kb-cost-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+
+    .kb-cost-label {
+      color: var(--ink-muted);
+    }
+
+    .kb-cost-amount {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+    }
+
+    .kb-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-top: 12px;
+      border-top: 2px solid var(--border);
+      margin-top: 12px;
+    }
+
+    .kb-total-label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .kb-total-amount {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kb-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .kb-actions .btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .loading { text-align: center; padding: 40px 20px; color: var(--ink-muted); }
+    .error { background: rgba(139, 30, 30, 0.1); border: 1px solid rgba(139, 30, 30, 0.2); color: var(--danger); padding: 16px; border-radius: 6px; margin-bottom: 20px; }
+
+    @media (max-width: 1024px) {
+      .kb-container {
+        grid-template-columns: 1fr;
+      }
+      .kb-dept-panel, .kb-summary-panel {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="kb-header">
+  <a href="index.html" class="back-link">← Invoice Generator</a>
+  <h1 class="kb-header-title">Kit Builder</h1>
+</header>
+
+<div class="kb-container">
+  <!-- Left: Departments -->
+  <div class="kb-dept-panel">
+    <h3 class="kb-dept-title">Department</h3>
+    <div class="kb-dept-list" id="kb-depts"></div>
+  </div>
+
+  <!-- Center: Equipment -->
+  <div class="kb-equipment-panel">
+    <div class="kb-tier-toggle" id="kb-tiers"></div>
+    <div class="kb-equipment-list" id="kb-equipment"></div>
+  </div>
+
+  <!-- Right: Summary -->
+  <div class="kb-summary-panel">
+    <h3 class="kb-summary-title">Your Kit</h3>
+    <div class="kb-selected-items" id="kb-selected"></div>
+    <div class="kb-cost-section">
+      <div class="kb-cost-row">
+        <span class="kb-cost-label">Equipment Total</span>
+        <span class="kb-cost-amount" id="kb-subtotal">$0</span>
+      </div>
+    </div>
+    <div class="kb-total">
+      <span class="kb-total-label">Daily Total</span>
+      <span class="kb-total-amount" id="kb-total">$0</span>
+    </div>
+    <div class="kb-actions">
+      <button class="btn btn-primary btn-sm" id="kb-save-btn">💾 Save Kit</button>
+      <button class="btn btn-sm" id="kb-clear-btn">Clear Kit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============ CONFIG ============
+const KIT_STORAGE_KEY = 'invgen:kb:selected';
+
+// ============ STATE ============
+let selectedDept = null;
+let selectedTier = 'Beginner';
+let selectedItems = [];
+let departments = [];
+let kitData = {};
+
+// ============ LOAD DATA ============
+async function loadData() {
+  try {
+    const response = await fetch('kit-data.json');
+    if (!response.ok) throw new Error(`Failed to load data: ${response.status}`);
+    kitData = await response.json();
+    departments = Object.keys(kitData).sort();
+
+    // Pre-select first department
+    if (departments.length > 0) {
+      selectedDept = departments[0];
+    }
+
+    render();
+  } catch (err) {
+    console.error('Load error:', err);
+    document.getElementById('kb-equipment').innerHTML = `<div class="error">Failed to load data: ${err.message}. Make sure kit-data.json is in the same folder.</div>`;
+  }
+}
+
+// ============ RENDER ============
+function renderDepartments() {
+  const container = document.getElementById('kb-depts');
+  container.innerHTML = departments.map(d => `
+    <button class="kb-dept-btn${selectedDept === d.id ? ' active' : ''}" data-dept="${d.id}">
+      ${d.name}
+    </button>
+  `).join('');
+
+  container.querySelectorAll('.kb-dept-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedDept = parseInt(btn.dataset.dept);
+      render();
+    });
+  });
+}
+
+function renderTiers() {
+  const container = document.getElementById('kb-tiers');
+  container.innerHTML = ['Beginner', 'Intermediate', 'Master'].map(tier => `
+    <button class="kb-tier-btn${selectedTier === tier ? ' active' : ''}" data-tier="${tier}">
+      ${tier}
+    </button>
+  `).join('');
+
+  container.querySelectorAll('.kb-tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedTier = btn.dataset.tier;
+      renderEquipment();
+    });
+  });
+}
+
+function renderEquipment() {
+  const container = document.getElementById('kb-equipment');
+  if (!selectedDept || !kitData[selectedDept]) {
+    container.innerHTML = '<div class="loading">Select a department to see equipment</div>';
+    return;
+  }
+
+  const deptEquipment = kitData[selectedDept];
+  const parentItems = Object.keys(deptEquipment);
+
+  if (parentItems.length === 0) {
+    container.innerHTML = '<div class="loading">No equipment available for this department</div>';
+    return;
+  }
+
+  let variantId = 0;
+  container.innerHTML = parentItems.map(parentName => {
+    const variants = deptEquipment[parentName];
+    const tierVariants = variants.filter(v => v.tier === selectedTier);
+
+    if (tierVariants.length === 0) return '';
+
+    const variantHTML = tierVariants.map(v => {
+      variantId++;
+      const displayName = v.spec && v.spec !== 'N/A' ? `${v.spec}` : parentName;
+      return `
+        <div class="kb-variant" data-variant-id="${variantId}" data-variant-name="${displayName}" data-variant-price="${v.day_rate}">
+          <span class="kb-variant-name">${displayName}</span>
+          <span class="kb-variant-price">$${Math.round(v.day_rate)}/day</span>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="kb-parent-item">
+        <div class="kb-parent-header">
+          <span class="kb-parent-name">${parentName}</span>
+          <span class="kb-expand-icon">▼</span>
+        </div>
+        <div class="kb-variants">${variantHTML}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Wire up parent headers
+  container.querySelectorAll('.kb-parent-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const variants = header.nextElementSibling;
+      header.classList.toggle('expanded');
+      variants.classList.toggle('show');
+    });
+  });
+
+  // Wire up variant clicks
+  container.querySelectorAll('.kb-variant').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.variantName;
+      const price = parseFloat(btn.dataset.variantPrice);
+
+      selectedItems.push({ name, price });
+      saveKit();
+      renderSummary();
+    });
+  });
+}
+
+function renderSummary() {
+  const container = document.getElementById('kb-selected');
+
+  if (selectedItems.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink-muted);font-size:13px;">No items selected</div>';
+  } else {
+    container.innerHTML = selectedItems.map((item, idx) => `
+      <div class="kb-selected-item">
+        <div>
+          <div>${item.name}</div>
+          <div style="font-size:11px;color:var(--ink-muted);">$${item.price}/day</div>
+        </div>
+        <button class="kb-selected-remove" data-idx="${idx}">Remove</button>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.kb-selected-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx);
+        selectedItems.splice(idx, 1);
+        saveKit();
+        renderSummary();
+        updateCosts();
+      });
+    });
+  }
+
+  updateCosts();
+}
+
+function updateCosts() {
+  const subtotal = selectedItems.reduce((sum, item) => sum + item.price, 0);
+  document.getElementById('kb-subtotal').textContent = `$${subtotal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  document.getElementById('kb-total').textContent = `$${subtotal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+}
+
+function render() {
+  renderDepartments();
+  renderTiers();
+  renderEquipment();
+  renderSummary();
+}
+
+function saveKit() {
+  localStorage.setItem(KIT_STORAGE_KEY, JSON.stringify(selectedItems));
+}
+
+function loadKit() {
+  try {
+    const stored = localStorage.getItem(KIT_STORAGE_KEY);
+    if (stored) selectedItems = JSON.parse(stored);
+  } catch (err) {
+    console.error('Load kit error:', err);
+  }
+}
+
+// ============ EVENT LISTENERS ============
+document.getElementById('kb-save-btn').addEventListener('click', () => {
+  const name = prompt('Kit name:', `${selectedDept} Kit`);
+  if (name) {
+    alert(`Kit "${name}" saved! (Local storage)`);
+    saveKit();
+  }
+});
+
+document.getElementById('kb-clear-btn').addEventListener('click', () => {
+  if (confirm('Clear all items?')) {
+    selectedItems = [];
+    saveKit();
+    renderSummary();
+  }
+});
+
+// ============ INIT ============
+loadKit();
+loadData();
+</script>
+
+</body>
+</html>
